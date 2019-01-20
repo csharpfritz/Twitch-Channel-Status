@@ -1,10 +1,18 @@
 // Polyfill for document.currentScript - https://github.com/JamesMGreene/document.currentScript
 !function(){function a(a){if("string"==typeof a&&a)for(var b=0,c=i.length;c>b;b++)if(i[b].src===a)return i[b]}function b(){for(var a,b=0,c=i.length;c>b;b++)if(!i[b].src){if(a)return void 0;a=i[b]}return a}function c(){var a=0;return"undefined"!=typeof e&&e&&"number"==typeof e.skipStackDepth&&(a=e.skipStackDepth),a}function d(a,b){var e,f,g,h="number"==typeof b;return b=h?b:c(),"string"==typeof a&&a&&(h?f=a.match(/((?:|blob:)(?:http[s]?|file):\/\/[\/]?.+?\/[^:\)]*?)(?::\d+)(?::\d+)?/):(f=a.match(/^(?:|[^:@]*@|.+\)@(?=blob|http[s]?|file)|.+?\s+(?: at |@)(?:[^:\(]+ )*[\(]?)((?:|blob:)(?:http[s]?|file):\/\/[\/]?.+?\/[^:\)]*?)(?::\d+)(?::\d+)?/),f&&f[1]||(f=a.match(/\)@((?:|blob:)(?:http[s]?|file):\/\/[\/]?.+?\/[^:\)]*?)(?::\d+)(?::\d+)?/),f&&f[1]&&(e=f[1]))),f&&f[1]&&(b>0?(g=a.slice(a.indexOf(f[0])+f[0].length),e=d(g,b-1)):e=f[1])),e}function e(){if(0!==i.length){if(1===i.length)return i[0];if("readyState"in i[0])for(var c=i.length;c--;)if("interactive"===i[c].readyState)return i[c];if("loading"===document.readyState)return i[i.length-1];var e,j=new Error;if(f&&(e=j.stack),!e&&g)try{throw j}catch(k){e=k.stack}if(e){var l=d(e),m=a(l);return m||l!==h||(m=b()),m}}}var f=!1,g=!1;!function(){try{var a=new Error;throw f="string"==typeof a.stack&&!!a.stack,a}catch(b){g="string"==typeof b.stack&&!!b.stack}}();var h=window.location.href,i=document.getElementsByTagName("script");e.skipStackDepth=1;var j=!("currentScript"in document),k=document.__defineGetter__,l="function"==typeof Object.defineProperty&&function(){var a;try{Object.defineProperty(document,"_xyz",{value:"blah",enumerable:!0,writable:!1,configurable:!1}),a="blah"===document._xyz,delete document._xyz}catch(b){a=!1}return a}();document._currentScript=e,j&&(l?Object.defineProperty(document,"currentScript",{get:e,enumerable:!0,configurable:!1}):k&&document.__defineGetter__("currentScript",e))}();
 
+/**
+ * Cheer roberttables 1000 January 20, 2019
+ * Cheer sqlmistermagoo 500 January 20, 2019
+ * Cheer pharewings 500 January 20, 2019
+ */
+
+
 // Create a closure with a reference to our script
 (function (document, $script) {
   // Allow customizing the script with various data-* attributes
   var attribute = $script.attr("data-attribute") || "data-twitch-channel",
+      clientId = $script.attr("data-twitch-clientid") || "data-twitch-clientid",
       interval = parseInt($script.attr("data-interval")) || false,
       onlineImage = $script.attr("data-online-image") || 'data:image/svg+xml,<?xml version="1.0"?><svg height="20px" viewBox="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="green"/></svg>',
       offlineImage = $script.attr("data-offline-image") || 'data:image/svg+xml,<?xml version="1.0"?><svg height="20px" viewBox="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="8" fill="red"/></svg>',
@@ -25,6 +33,10 @@
       if (!$this.attr("src")) {
         $this.attr("src", $this.attr("data-offline-image") || offlineImage);
       }
+
+      if ($this.attr("data-twitch-clientid")) {
+        clientId = $this.attr("data-twitch-clientid");
+      }
     });
 
     // Don't try to load statuses for nothing
@@ -37,7 +49,7 @@
 
     // Ask twitch for the status of all channels at once
     $.ajax({
-      url: "https://api.twitch.tv/kraken/streams",
+      url: "https://api.twitch.tv/kraken/streams?client_id=" + clientId,
       data: {"channel": Object.keys(channels).join(","), "limit": Object.keys(channels).length},
       cache: false,
       dataType: "jsonp"
